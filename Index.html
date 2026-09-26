@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lendia Privada</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 90vh; }
+        #chat { flex: 1; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: #1e1e1e; border-radius: 8px; }
+        .msg { margin: 8px 0; padding: 8px 12px; border-radius: 6px; max-width: 80%; }
+        .user { background: #007bff; align-self: flex-end; margin-left: auto; }
+        .bot { background: #333; align-self: flex-start; }
+        .input-area { display: flex; gap: 8px; }
+        input { flex: 1; padding: 12px; border-radius: 6px; border: none; background: #2a2a2a; color: #fff; }
+        button { padding: 12px 20px; border-radius: 6px; border: none; background: #28a745; color: #fff; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Lendia - Assistente Privada</h2>
+    <div id="pin-area">
+        <input type="password" id="pin" placeholder="Digite o seu PIN de acesso">
+    </div>
+    <div id="chat"></div>
+    <div class="input-area">
+        <input type="text" id="message" placeholder="Digite a sua mensagem...">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const pin = document.getElementById('pin').value;
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value.trim();
+            if(!message) return;
+
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<div class="msg user">${message}</div>`;
+            messageInput.value = '';
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message, pin })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    chat.innerHTML += `<div class="msg bot">${data.reply}</div>`;
+                } else {
+                    chat.innerHTML += `<div class="msg bot" style="color:red;">Erro: ${data.detail}</div>`;
+                }
+            } catch(e) {
+                chat.innerHTML += `<div class="msg bot" style="color:red;">Erro na ligação ao servidor.</div>`;
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
